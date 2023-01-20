@@ -36,3 +36,17 @@ textarea {
 .sidebar h2 {
     margin-top: 5px;
 }
+
+textarea.entrytitle{
+    resize: none;
+    height: 10vh;
+    width: auto;
+    overflow: auto;
+}
+
+textarea.entrycontent{
+    resize: none;
+    height: 40vh;
+    width: auto;
+    overflow: auto;
+}

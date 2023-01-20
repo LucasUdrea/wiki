@@ -6,4 +6,7 @@
 
 {% block body %}
 {{ entry|safe }}
+<button>
+    <a href="{% url 'wiki:editentry' title=entrytitle %}">Edit Entry</a>
+</button>
 {% endblock %}
