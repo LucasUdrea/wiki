@@ -4,18 +4,17 @@
 Wiki 
 {% endblock %} 
 
-{% block body %} 
-<h1>Search Results for "{{title}}":</h1>
-{% if partialmatchs %}
-  <p>Related Results:</p>
-    <ul>
-      {% for title in partialmatchs %}
-      <li><a href="{% url 'entry' title=title %}">{{title}}</a></li>
-      {% endfor %}
-    </ul>
-  {% else %}
-  <p>No search results found for "{{title}}" on Wiki.</p>
-  <p>Check the <a href="{% url 'index' %}">index</a> page to see available articles.</p>
-  {% endif %}
-
+{% block body %}
+    <h1>Search Results for "{{ title }}"</h1>
+    {% if partial_matches %}
+        <p>Here are some pages that match your search:</p>
+        <ul>
+            {% for match in partial_matches %}
+                <li><a href="{% url 'wiki:wikientry' match|safe %}">{{ match }}</a></li>
+            {% endfor %}
+        </ul>
+    {% else %}
+        <p>No pages found that match your search.</p>
+    {% endif %}
 {% endblock %}
+

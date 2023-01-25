@@ -1,4 +1,4 @@
-from django.shortcuts import render
+from django.shortcuts import render, redirect
 from markdown2 import Markdown 
 from . import util
 from django import forms
@@ -10,17 +10,19 @@ class SearchForm(forms.Form):
         "placeholder" : "Search by Title"
     }))
 
-class NewEntryForm(forms.Form): 
+class NewEntryForm(forms.Form):
     title = forms.CharField(label= "", max_length= 10, min_length= 1, widget=forms.TextInput(attrs={
         "placeholder" : "Title",
-    }) )
-    content = forms.CharField(label="",  max_length= 500, min_length=1, widget=forms.Textarea(attrs={
+        'style': 'width: 50rem; height: 5vh; padding: 1rem; margin-bottom: 1rem;',
+    }))
+    content = forms.CharField(label="", max_length= 500, min_length=1, widget=forms.Textarea(attrs={
         "placeholder" : "This Wiki-like page uses Markdonw for writing the entries",
-
+        'style': 'width: 60rem; height: 40vh; padding: 1rem;',
     }))
 class EditEntryForm(forms.Form): 
     content = forms.CharField(label="", max_length=500, min_length=1, widget=forms.Textarea(attrs={
-        "placeholder" : "This Wiki-like page uses Markdonw for writing the entries"
+        "placeholder" : "This Wiki-like page uses Markdonw for writing the entries",
+        'style': 'width: 60rem; height: 40vh; padding: 1rem;'
     }) )
 
 
@@ -38,7 +40,8 @@ def wikientry (request, title):
         return nonfound (request,title)
         #If it does, markdown converts the .md entry to an html for rendering
     return render (request, "encyclopedia/entry.html",{ 
-        "entry" : markdowner.convert(util.get_entry(title)), "entrytitle" : title,
+        "entry" : markdowner.convert(util.get_entry(title)), 
+        "entrytitle" : title,
         "search": SearchForm(),
         })
     
@@ -111,27 +114,30 @@ def randompage (request):
     title= random.choice(entries)
     return wikientry(request,title)
 
-def search (request):
+def search(request):
     if request.method == "POST":
         form = SearchForm(request.POST)
-
-    if form.is_valid():
-        title= form.cleaned_data["title"]
-        entry= util.get_entry(title)
-        if entry:
-            return wikientry(request,title)
-        else:
-            partialmatchs= partialmatchs(title)
-            return render (request, "encyclopedia/search.html", {
-                "title": title, 
-                "partialmatchs" : partialmatchs,
-                "searchform": SearchForm(),
-            })
-
-def partialmatchs (title):
-    partialresults = []
-
-    for entry in util.get_entry(title):
-       if title.lower() in entry.lower() or entry.lower() in title.lower():
-            partialresults.append(entry)
-            return partialresults
+        if form.is_valid():
+            title = form.cleaned_data["title"]
+            entry = util.get_entry(title)
+            if entry:
+                # If an exact match is found, redirect to the wikientry page
+                return wikientry(request, title)
+            else:
+                # Initialize an empty list to store partial matches
+                partial_matches = []
+                # Iterate over all entries
+                for entry in util.list_entries():
+                    # Check if the title is a substring of the entry or vice versa
+                    if title.lower() in entry.lower() or entry.lower() in title.lower():
+                        # If it is, append the entry to the list of partial matches
+                        partial_matches.append(entry)
+                # Render the search.html template with the title, list of partial matches, and the search form
+                return render(request, "encyclopedia/search.html", {
+                    "title": title, 
+                    "partial_matches": partial_matches,
+                    "searchform": SearchForm(),
+                })
+    else:
+        # If the request is not a post request, redirect to the index page
+        return redirect("wiki:index")
